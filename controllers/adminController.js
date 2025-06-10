@@ -8,7 +8,7 @@ import Admin from '../models/Admin.js';
 export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
 
-  try {
+  try {vinol
     const admin = await Admin.findOne({ email });
     if (!admin) return res.status(401).json({ message: 'Invalid email or password' });
 

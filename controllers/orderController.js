@@ -1,6 +1,8 @@
 // controllers/orderController.js
 import Order from '../models/Order.js';
 import bcrypt from 'bcryptjs';
+import jwt from 'jsonwebtoken';
+
 // @desc    Create a new order
 // @route   POST /api/orders
 // @access  Private (Customer)
