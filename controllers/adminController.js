@@ -67,3 +67,42 @@ export const updateUserRole = async (req, res) => {
     res.status(500).json({ message: 'Failed to update user role' });
   }
 };
+
+export const createUser = async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = await User.create({ name, email, password: hashedPassword, role });
+    res.status(201).json({ message: 'User created successfully', user: newUser });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create user', error: error.message });
+  }
+};
+
+export const deleteUser = async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete user', error: error.message });
+  }
+};
+
+export const createOrder = async (req, res) => {
+  try {
+    const { user, items, total, status } = req.body;
+    const newOrder = await Order.create({ user, items, total, status });
+    res.status(201).json({ message: 'Order created successfully', order: newOrder });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create order', error: error.message });
+  }
+};
+
+export const deleteOrder = async (req, res) => {
+  try {
+    await Order.findByIdAndDelete(req.params.orderId);
+    res.json({ message: 'Order deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete order', error: error.message });
+  }
+};
