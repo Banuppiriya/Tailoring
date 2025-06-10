@@ -1,3 +1,4 @@
+// middleware/authMiddleware.js
 import jwt from 'jsonwebtoken';
 
 const auth = (allowedRoles = []) => {
@@ -16,6 +17,11 @@ const auth = (allowedRoles = []) => {
       res.status(401).json({ error: 'Invalid token' });
     }
   };
+};
+
+export const verifyAdmin = (req, res, next) => {
+  if (req.user?.role === 'admin') return next();
+  return res.status(403).json({ error: 'Admins only' });
 };
 
 export default auth;

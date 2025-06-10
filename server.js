@@ -2,13 +2,19 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
+
+
 import authRoutes from './routes/authRoutes.js';
 import profileRoutes from './routes/profileRoutes.js';
+import employeeRoutes from './routes/employeeRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import orderRoutes from './routes/orderRoutes.js';
 
 dotenv.config();
 
 const app = express();
 app.use(express.json());
+app.use('/api/orders', orderRoutes);
 
 // Connect to MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -31,3 +37,7 @@ mongoose.connect(process.env.MONGO_URI, {
 // Routes (should be set after express.json())
 app.use('/api', authRoutes);
 app.use('/api', profileRoutes);
+app.use('/api', employeeRoutes);
+app.use('/api/admin', adminRoutes); // 👈 This sets up the route
+app.use('/api/orders', orderRoutes); // 👈 This sets up the route
+
