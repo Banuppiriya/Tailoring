@@ -2,29 +2,35 @@ import express from 'express';
 import {
   adminLogin,
   getAllUsers,
-  getAllOrders,
-  updateOrderStatus,
   updateUserRole,
   createUser,
   deleteUser,
+  getAllOrders,
+  updateOrderStatus,
   createOrder,
-  deleteOrder
+  deleteOrder,
+  getAllServices,
+  createService,
+  deleteService
 } from '../controllers/adminController.js';
 
-import { verifyAdmin } from '../middleware/authMiddleware.js';
+import adminMiddleware from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
 router.post('/login', adminLogin);
+router.get('/users', adminMiddleware, getAllUsers);
+router.put('/users/:id/role', adminMiddleware, updateUserRole);
+router.post('/users', adminMiddleware, createUser);
+router.delete('/users/:id', adminMiddleware, deleteUser);
 
-// Protected routes below
-router.get('/users', verifyAdmin, getAllUsers);
-router.get('/orders', verifyAdmin, getAllOrders);
-router.put('/order/:orderId', verifyAdmin, updateOrderStatus);
-router.put('/user/:id/role', verifyAdmin, updateUserRole);
-router.post('/user', verifyAdmin, createUser);
-router.delete('/user/:id', verifyAdmin, deleteUser);
-router.post('/order', verifyAdmin, createOrder);
-router.delete('/order/:orderId', verifyAdmin, deleteOrder);
+router.get('/orders', adminMiddleware, getAllOrders);
+router.put('/orders/:orderId/status', adminMiddleware, updateOrderStatus);
+router.post('/orders', adminMiddleware, createOrder);
+router.delete('/orders/:orderId', adminMiddleware, deleteOrder);
+
+router.get('/services', adminMiddleware, getAllServices);
+router.post('/services', adminMiddleware, createService);
+router.delete('/services/:id', adminMiddleware, deleteService);
 
 export default router;

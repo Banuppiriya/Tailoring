@@ -1,48 +1,26 @@
 import jwt from 'jsonwebtoken';
-import Admin from '../models/Admin.js';
+import User from '../models/User.js';
 
-// Auth middleware to verify JWT token
-export const authMiddleware = (req, res, next) => {
-  const authHeader = req.headers.authorization;
+export const authMiddleware = (allowedRoles = []) => {
+  return async (req, res, next) => {
+    try {
+      const authHeader = req.headers.authorization;
+      if (!authHeader) return res.status(401).json({ message: 'No token provided' });
 
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Access denied: No token provided' });
-  }
+      const token = authHeader.split(' ')[1];
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-  const token = authHeader.split(' ')[1];
+      const user = await User.findById(decoded.id).select('-password');
+      if (!user) return res.status(401).json({ message: 'User not found' });
 
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = decoded;
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid token', error: error.message });
-  }
-};
+      if (allowedRoles.length && !allowedRoles.includes(user.role)) {
+        return res.status(403).json({ message: 'Forbidden: Insufficient role' });
+      }
 
-// Admin-only middleware
-export const verifyAdmin = async (req, res, next) => {
-  const authHeader = req.headers.authorization;
-
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
-    return res.status(401).json({ message: 'Access denied: No token provided' });
-  }
-
-  const token = authHeader.split(' ')[1];
-
-  try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-
-    if (decoded.role !== 'admin') {
-      return res.status(403).json({ message: 'Access denied: Not an admin' });
+      req.user = user;
+      next();
+    } catch (error) {
+      return res.status(401).json({ message: 'Unauthorized', error: error.message });
     }
-
-    const admin = await Admin.findById(decoded.id).select('-password');
-    if (!admin) return res.status(404).json({ message: 'Admin not found' });
-
-    req.admin = admin; // make admin info available to controller
-    next();
-  } catch (error) {
-    res.status(401).json({ message: 'Invalid token', error: error.message });
-  }
+  };
 };

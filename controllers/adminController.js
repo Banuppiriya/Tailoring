@@ -1,14 +1,14 @@
-// controllers/adminController.js
-import User from '../models/User.js';       // Assuming you have a User model
-import Order from '../models/Order.js';     // Assuming you have an Order model
+import User from '../models/User.js';
+import Order from '../models/Order.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import Admin from '../models/Admin.js';
+import Service from '../models/Service.js';
 
 export const adminLogin = async (req, res) => {
   const { email, password } = req.body;
 
-  try {vinol
+  try {
     const admin = await Admin.findOne({ email });
     if (!admin) return res.status(401).json({ message: 'Invalid email or password' });
 
@@ -30,31 +30,7 @@ export const getAllUsers = async (req, res) => {
     res.status(500).json({ message: 'Failed to fetch users' });
   }
 };
-export const getAllOrders = async (req, res) => {
-  try {
-    const orders = await Order.find().populate('user');
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ message: 'Could not fetch orders', error: error.message });
-  }
-};
 
-export const updateOrderStatus = async (req, res) => {
-  const { orderId } = req.params;
-  const { status } = req.body;
-
-  try {
-    const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ message: 'Order not found' });
-
-    order.status = status;
-    await order.save();
-
-    res.status(200).json({ message: 'Order status updated', order });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating order status', error: error.message });
-  }
-};
 export const updateUserRole = async (req, res) => {
   const { role } = req.body;
   try {
@@ -88,6 +64,32 @@ export const deleteUser = async (req, res) => {
   }
 };
 
+export const getAllOrders = async (req, res) => {
+  try {
+    const orders = await Order.find().populate('user', 'name email');
+    res.status(200).json(orders);
+  } catch (error) {
+    res.status(500).json({ message: 'Could not fetch orders', error: error.message });
+  }
+};
+
+export const updateOrderStatus = async (req, res) => {
+  const { orderId } = req.params;
+  const { status } = req.body;
+
+  try {
+    const order = await Order.findById(orderId);
+    if (!order) return res.status(404).json({ message: 'Order not found' });
+
+    order.status = status;
+    await order.save();
+
+    res.status(200).json({ message: 'Order status updated', order });
+  } catch (error) {
+    res.status(500).json({ message: 'Error updating order status', error: error.message });
+  }
+};
+
 export const createOrder = async (req, res) => {
   try {
     const { user, items, total, status } = req.body;
@@ -104,5 +106,43 @@ export const deleteOrder = async (req, res) => {
     res.json({ message: 'Order deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete order', error: error.message });
+  }
+};
+
+export const getAllServices = async (req, res) => {
+  try {
+    const services = await Service.find();
+    res.json(services);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch services' });
+  }
+};
+
+export const createService = async (req, res) => {
+  try {
+    const { name, tailorId, price, description, category, estimatedDeliveryDays, isAvailable, imageUrl } = req.body;
+    const newService = new Service({
+      name,
+      tailorId,
+      price,
+      description,
+      category,
+      estimatedDeliveryDays,
+      isAvailable,
+      imageUrl
+    });
+    await newService.save();
+    res.status(201).json({ message: 'Service created', service: newService });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to create service', error: error.message });
+  }
+};
+
+export const deleteService = async (req, res) => {
+  try {
+    await Service.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Service deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete service', error: error.message });
   }
 };

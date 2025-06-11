@@ -1,43 +1,28 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import userRoutes from './routes/userRoutes.js';
 import dotenv from 'dotenv';
-
-
-
-import authRoutes from './routes/authRoutes.js';
-import profileRoutes from './routes/profileRoutes.js';
-import employeeRoutes from './routes/employeeRoutes.js';
+import connectDB from './config/db.js';
 import adminRoutes from './routes/adminRoutes.js';
-import orderRoutes from './routes/orderRoutes.js';
+
 
 dotenv.config();
 
+connectDB();
+
 const app = express();
 app.use(express.json());
-app.use('/api/orders', orderRoutes);
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true
-})
-.then(() => {
-  console.log('✅ MongoDB connected successfully');
+app.use('/api/admin', adminRoutes);
+app.use('/api/users', userRoutes);
 
-  // Start server only after successful DB connection
-  app.listen(5000, () => {
-    console.log('🚀 Server running on port 5000');
-  });
-})
-.catch(err => {
-  console.error('❌ MongoDB connection error:', err.message);
-  process.exit(1);
+
+app.use((req, res) => {
+  res.status(404).json({ message: 'Route not found' });
 });
 
-// Routes (should be set after express.json())
-app.use('/api', authRoutes);
-app.use('/api', profileRoutes);
-app.use('/api', employeeRoutes);
-app.use('/api/admin', adminRoutes); // 👈 This sets up the route
-app.use('/api/orders', orderRoutes); // 👈 This sets up the route
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+
+
 

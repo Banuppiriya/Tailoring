@@ -1,4 +1,3 @@
-// routes/orderRoutes.js
 import express from 'express';
 import {
   createOrder,
@@ -7,15 +6,14 @@ import {
   updateOrderStatus,
   deleteOrder,
 } from '../controllers/orderController.js';
-
-import auth, { verifyAdmin } from '../middleware/authMiddleware.js';
+import { authMiddleware } from '../middleware/authMiddleware.js'; // ✅ Keep only this
 
 const router = express.Router();
 
-router.post('/', auth(['customer']), createOrder);
-router.get('/', auth(['customer']), getMyOrders);
-router.get('/admin', auth(['admin']), getAllOrders);
-router.put('/:id', auth(['admin', 'tailor']), updateOrderStatus);
-router.delete('/:id', auth(['admin']), deleteOrder);
+router.post('/', authMiddleware(['customer']), createOrder);
+router.get('/', authMiddleware(['customer']), getMyOrders);
+router.get('/admin', authMiddleware(['admin']), getAllOrders);
+router.put('/:id', authMiddleware(['admin', 'tailor']), updateOrderStatus);
+router.delete('/:id', authMiddleware(['admin']), deleteOrder);
 
 export default router;
