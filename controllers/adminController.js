@@ -203,3 +203,16 @@ export const deleteService = async (req, res) => {
   }
 };
 // Admin delete service endpoint
+
+// Admin assign tailor to order function
+export const assignTailorToOrder = async (req, res) => {
+  try {
+    const { orderId, tailorId } = req.body;
+
+    const order = await Order.findByIdAndUpdate(orderId, { tailorId }, { new: true });
+    res.json({ message: 'Tailor assigned', order });
+  } catch (err) {
+    res.status(500).json({ message: 'Assignment failed', error: err.message });
+  }
+};
+// Admin assign tailor to order endpoint

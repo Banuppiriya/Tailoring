@@ -56,3 +56,13 @@ export const deleteOrder = async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 };
+
+export const getOrdersForTailor = async (req, res) => {
+  try {
+    const tailorId = req.user.id; // from JWT
+    const orders = await Order.find({ tailorId }).populate('user', 'email contactNumber deliveryAddress');
+    res.json(orders);
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch orders' });
+  }
+};

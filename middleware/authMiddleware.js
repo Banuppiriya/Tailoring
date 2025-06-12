@@ -41,3 +41,16 @@ export const authMiddleware = (allowedRoles = []) => {
   };
 };
 
+export const protectTailor = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+  if (!token) return res.status(401).json({ message: 'No token provided' });
+
+  try {
+    const decoded = jwt.verify(token, 'secret');
+    if (decoded.role !== 'tailor') throw new Error('Not a tailor');
+    req.user = decoded;
+    next();
+  } catch {
+    res.status(401).json({ message: 'Unauthorized' });
+  }
+};
