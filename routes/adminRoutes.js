@@ -18,7 +18,13 @@ import adminMiddleware from '../middleware/adminMiddleware.js';
 
 const router = express.Router();
 
+// Admin routes
 router.post('/login', adminLogin);
+
+router.get('/admin-only', adminMiddleware, (req, res) => {
+  res.send('Welcome Admin!');
+});
+
 router.get('/users', adminMiddleware, getAllUsers);
 router.put('/users/:id/role', adminMiddleware, updateUserRole);
 router.post('/users', adminMiddleware, createUser);

@@ -1,80 +1,58 @@
-// controllers/orderController.js
-import Order from '../models/Order.js';
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
 
-// @desc    Create a new order
-// @route   POST /api/orders
-// @access  Private (Customer)
+import Order from '../models/Order.js';
+
+// Create a new order
 export const createOrder = async (req, res) => {
   try {
-    const { clothingType, measurements, deliveryDate } = req.body;
-
-    const newOrder = await Order.create({
-      user: req.user.id,
-      clothingType,
-      measurements,
-      deliveryDate,
-      status: 'pending',
-    });
-
-    res.status(201).json(newOrder);
-  } catch (error) {
-    res.status(400).json({ error: 'Order creation failed', details: error.message });
+    const order = new Order(req.body);
+    const savedOrder = await order.save();
+    res.status(201).json(savedOrder);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
 };
 
-// @desc    Get all orders (for admin)
-// @route   GET /api/orders/admin
-// @access  Private (Admin)
+// Get all orders with populated userDetails
 export const getAllOrders = async (req, res) => {
   try {
-    const orders = await Order.find().populate('user', 'name email');
+    const orders = await Order.find().populate('userDetails');
     res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to fetch orders', details: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// @desc    Get orders for logged-in customer
-// @route   GET /api/orders
-// @access  Private (Customer)
-export const getMyOrders = async (req, res) => {
+// Get order by ID
+export const getOrderById = async (req, res) => {
   try {
-    const orders = await Order.find({ user: req.user.id });
-    res.status(200).json(orders);
-  } catch (error) {
-    res.status(500).json({ error: 'Could not fetch your orders', details: error.message });
-  }
-};
-
-// @desc    Update order status
-// @route   PUT /api/orders/:id
-// @access  Private (Admin or Tailor)
-export const updateOrderStatus = async (req, res) => {
-  try {
-    const order = await Order.findById(req.params.id);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
-    order.status = req.body.status || order.status;
-    await order.save();
-
+    const order = await Order.findById(req.params.id).populate('userDetails');
+    if (!order) return res.status(404).json({ message: 'Order not found' });
     res.status(200).json(order);
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to update order status', details: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };
 
-// @desc    Delete an order
-// @route   DELETE /api/orders/:id
-// @access  Private (Admin)
+// Update order
+export const updateOrder = async (req, res) => {
+  try {
+    const updatedOrder = await Order.findByIdAndUpdate(req.params.id, req.body, {
+      new: true
+    }).populate('userDetails');
+    if (!updatedOrder) return res.status(404).json({ message: 'Order not found' });
+    res.status(200).json(updatedOrder);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+// Delete order
 export const deleteOrder = async (req, res) => {
   try {
-    const order = await Order.findByIdAndDelete(req.params.id);
-    if (!order) return res.status(404).json({ error: 'Order not found' });
-
+    const deletedOrder = await Order.findByIdAndDelete(req.params.id);
+    if (!deletedOrder) return res.status(404).json({ message: 'Order not found' });
     res.status(200).json({ message: 'Order deleted successfully' });
-  } catch (error) {
-    res.status(500).json({ error: 'Failed to delete order', details: error.message });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
 };

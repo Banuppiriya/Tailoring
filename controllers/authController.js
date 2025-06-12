@@ -1,7 +1,8 @@
-import User from '../models/User.js'; // or the correct path to your User model
+import User from '../models/User.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
+// Login Controller
 export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -22,18 +23,33 @@ export const login = async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
-    const token = jwt.sign({ id: user._id, role: user.role }, 'SECRET_KEY');
+    // Generate JWT
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET, // Make sure this exists in your .env file
+      { expiresIn: '1h' }
+    );
 
-    res.status(200).json({ message: 'Login successful', token });
+    res.status(200).json({
+      message: 'Login successful',
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      }
+    });
 
   } catch (error) {
     console.error('Error in login:', error.message);
-    res.status(500).json({ message: 'Login Failed' });
+    res.status(500).json({ message: 'Login Failed', error: error.message });
   }
 };
+
+// Register Controller
 export const register = async (req, res) => {
   try {
-    const { name, email, password , role } = req.body;
+    const { name, email, password, role } = req.body;
 
     if (!name || !email || !password || !role) {
       return res.status(400).json({ message: 'Missing fields' });
@@ -51,7 +67,7 @@ export const register = async (req, res) => {
       name,
       email,
       password: hashedPassword,
-      role: 'user'
+      role // this could be 'user' or 'admin'
     });
 
     await newUser.save();
@@ -60,6 +76,6 @@ export const register = async (req, res) => {
 
   } catch (error) {
     console.error('Error in register:', error.message);
-    res.status(500).json({ message: 'Registration Failed' });
+    res.status(500).json({ message: 'Registration Failed', error: error.message });
   }
 };
